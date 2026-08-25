@@ -1,0 +1,137 @@
+---
+title: "lista 02"
+author: "Alejandro Figueiredo 230532"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+caminho_banco <- normalizePath(
+  "~/SQL4Statisticians-main/SQL4Statisticians-main/datasets/me315.sqlite",
+  winslash = "/",
+  mustWork = TRUE
+)
+
+con <- dbConnect(SQLite(), caminho_banco)
+
+dbListTables(con)
+
+#professor tentei abrir o banco no meu comoputador pelo menos metodo que fizemos em sala, mas só deu dessa maneira que o chat passou
+```
+
+## ORDER BY 
+
+```{sql connection=con}
+SELECT STATE, PNO, PNAME FROM PRESERVE
+ORDER BY STATE ASC
+```
+
+```{sql connection=con}
+SELECT STATE, PNO, PNAME FROM PRESERVE
+ORDER BY STATE DESC
+```
+
+```{sql connection=con}
+SELECT STATE, PNO, PNAME FROM PRESERVE
+ORDER BY STATE DESC, PNO DESC
+```
+
+```{sql connection=con}
+SELECT STATE, PNO, PNAME FROM PRESERVE
+WHERE STATE = 'AZ'
+ORDER BY PNO DESC
+```
+
+```{sql connection=con}
+SELECT PNO, ACRES, PNAME FROM PRESERVE
+WHERE STATE = 'AZ'
+ORDER BY 3 ASC
+```
+
+```{sql connection=con}
+SELECT * FROM PRESERVE
+ORDER BY 4 DESC, 2 ASC
+```
+
+```{sql connection=con}
+SELECT PNO, PNAME FROM PRESERVE
+ORDER BY ACRES DESC
+```
+
+
+```{sql connection=con}
+SELECT STATE, FEE, PNAME FROM PRESERVE
+ORDER BY STATE ASC, FEE DESC, PNAME DESC
+```
+
+
+```{sql connection=con}
+SELECT PNO, ACRES FROM PRESERVE
+ORDER BY PNO ASC
+LIMIT 3
+```
+
+## HANDS ON
+
+```{sql connection=con}
+SELECT * FROM PRESERVE
+ORDER BY ACRES ASC
+```
+
+```{sql connection=con}
+SELECT PNAME, FEE FROM PRESERVE
+WHERE STATE = 'MT'
+ORDER BY PNAME DESC
+```
+
+```{sql connection=con}
+SELECT FEE, ACRES FROM PRESERVE
+ORDER BY FEE, ACRES
+```
+
+```{sql connection=con}
+SELECT PNAME FROM PRESERVE
+WHERE STATE = 'AZ'
+ORDER BY PNO ASC
+```
+
+```{sql connection=con}
+SELECT STATE, FEE, PNO FROM PRESERVE
+WHERE ACRES > 100
+ORDER BY STATE DESC, FEE DESC, PNO ASC
+```
+
+```{sql connection=con}
+SELECT * FROM PRESERVE
+WHERE STATE >= 'M'
+```
+
+```{sql connection=con}
+SELECT * FROM PRESERVE
+WHERE PNAME < 'TATKON'
+```
+
+```{sql connection=con}
+SELECT * FROM EMPLOYEE
+ORDER BY ENAME ASC
+```
+
+```{sql connection=con}
+SELECT ENAME, SALARY FROM EMPLOYEE
+WHERE SALARY > 2000
+ORDER BY SALARY DESC
+```
+
+```{sql connection=con}
+SELECT DNO, ENO, ENAME FROM EMPLOYEE
+ORDER BY DNO DESC, ENO ASC
+```
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+
+```
+
