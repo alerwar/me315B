@@ -1,0 +1,114 @@
+---
+title: "Lista 3"
+author: "Alejandro Figueiredo 230532"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+# Conecta/Cria o arquivo
+con <- dbConnect(RSQLite::SQLite(), "datasets/me315.sqlite")
+```
+
+```{sql connection=con}
+-- 1
+SELECT DISTINCT STATE, FEE FROM PRESERVE
+
+```
+
+```{sql connection=con}
+-- 2
+SELECT DISTINCT DNO FROM EMPLOYEE
+
+```
+
+```{sql connection=con}
+-- 3
+SELECT DNO, SALARY FROM EMPLOYEE
+```
+
+```{sql connection=con}
+-- 3
+SELECT DISTINCT DNO, SALARY FROM EMPLOYEE
+```
+
+```{sql connection=con}
+-- 3
+SELECT DISTINCT DNO, SALARY FROM EMPLOYEE ORDER BY DNO, SALARY
+```
+
+A primeira consulta apresenta todas as combinações de DNO e SALARY. A segunda elimina combinações duplicadas, mas, neste banco, o resultado permanece igual porque não existem pares repetidos. A terceira apresenta os mesmos resultados, organizados primeiro por DNO e depois por SALARY, em ordem crescente.
+
+```{sql connection=con}
+-- 4
+SELECT * FROM PRESERVE WHERE STATE = 'MT' AND ACRES < 1000
+```
+
+```{sql connection=con}
+-- 5
+SELECT * FROM PRESERVE WHERE ACRES >= 1200 AND ACRES <= 15000
+
+```
+
+```{sql connection=con}
+-- 6
+SELECT * FROM PRESERVE WHERE STATE = 'MT' AND FEE = 0 AND ACRES > 10000
+```
+
+```{sql connection=con}
+-- 7 
+SELECT * FROM PRESERVE WHERE STATE == 'MT' OR STATE == 'MA'
+
+```
+
+```{sql connection=con}
+-- 8
+SELECT * FROM PRESERVE WHERE STATE = 'MT' OR ACRES < 1000
+```
+
+```{sql connection=con}
+-- 9
+SELECT PNO, PNAME FROM PRESERVE WHERE FEE != 0
+
+```
+
+```{sql connection=con}
+-- 10
+SELECT PNO, PNAME FROM PRESERVE WHERE FEE != 3 AND FEE != 10 
+
+```
+
+```{sql connection=con}
+-- 11
+SELECT * FROM PRESERVE WHERE (STATE = 'AZ' AND FEE = 0) OR ACRES < 100
+```
+```{sql connection=con}
+-- 12
+SELECT * FROM PRESERVE WHERE (ACRES < 1000 AND FEE = 0) OR STATE = 'AZ'
+```
+
+```{sql connection=con}
+-- 13
+SELECT * FROM PRESERVE WHERE FEE == 0 OR (STATE == 'MT' AND ACRES > 1000)
+
+```
+
+```{sql connection=con}
+-- 14
+SELECT * FROM PRESERVE WHERE NOT (STATE = 'MT' AND FEE = 0)
+```
+
+15) São logicamente equivalentes
+
+16) São logicamente equivalentes
+
+17) Não são todas equivalentes. A primeira e a terceira são equivalentes; a segunda não é.
+
+18) Não são todas equivalentes. A primeira e a terceira são equivalentes; a segunda não é.
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```

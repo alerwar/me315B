@@ -1,0 +1,179 @@
+---
+title: "Laboratório 3"
+author: 'Alejandro Figueiredo RA: 230532'
+date: "2026-09-01"
+format:
+  pdf:
+    pdf-engine: pdflatex
+---
+
+```{r setup, include=FALSE}
+motor_webshot <- if (
+  requireNamespace("webshot", quietly = TRUE) &&
+  webshot::is_phantomjs_installed()
+) {
+  "webshot"
+} else if (tryCatch(
+  requireNamespace("webshot2", quietly = TRUE),
+  error = function(e) FALSE
+)) {
+  "webshot2"
+} else {
+  NULL
+}
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  webshot = motor_webshot
+)
+```
+
+```{r, eval=FALSE}
+install.packages(c("tidyverse", "leaflet", "webshot2"))
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(leaflet)
+```
+
+As estatísticas suficientes para determinar o atraso médio são a soma dos atrasos e a quantidade de voos para cada aeroporto de destino. Primeiro, essas duas quantidades são calculadas em cada parte da base. Depois, os resultados das partes são somados para calcular a média final.
+
+```{r}
+getStats <- function(input, pos) {
+  input %>%
+    filter(!startsWith(DESTINATION_AIRPORT, "1")) %>%
+    drop_na() %>%
+    group_by(DESTINATION_AIRPORT) %>%
+    summarise(
+      soma_atrasos = sum(ARRIVAL_DELAY),
+      total_voos = n(),
+      .groups = "drop"
+    )
+}
+```
+
+O argumento pos é necessário para a leitura em partes, mas não precisa ser utilizado dentro da função.
+
+```{r}
+computeStats <- function(input) {
+  input %>%
+    group_by(DESTINATION_AIRPORT) %>%
+    summarise(
+      MEAN_DELAY = sum(soma_atrasos) / sum(total_voos),
+      .groups = "drop"
+    )
+}
+```
+
+```{r}
+colunas_voos <- cols_only(
+  DESTINATION_AIRPORT = col_character(),
+  ARRIVAL_DELAY = col_double()
+)
+
+flights <- read_csv_chunked(
+  "flights.csv.zip",
+  callback = DataFrameCallback$new(getStats),
+  chunk_size = 1000000,
+  col_types = colunas_voos
+)
+
+flights <- computeStats(flights)
+
+head(flights)
+```
+
+```{r}
+airlines <- read_csv(
+  "airlines.csv",
+  show_col_types = FALSE
+)
+
+head(airlines)
+```
+
+```{r}
+colunas_aeroportos <- cols_only(
+  IATA_CODE = col_character(),
+  CITY = col_character(),
+  STATE = col_character(),
+  LATITUDE = col_double(),
+  LONGITUDE = col_double()
+)
+
+airports <- read_csv(
+  "airports.csv",
+  col_types = colunas_aeroportos
+)
+
+head(airports)
+```
+
+A chave da tabela flights é DESTINATION_AIRPORT e a chave da tabela airports é IATA_CODE. Para encontrar os aeroportos presentes em flights e ausentes em airports, utilizamos anti_join.
+
+```{r}
+aeroportos_ausentes <- flights %>%
+  anti_join(
+    airports,
+    by = c("DESTINATION_AIRPORT" = "IATA_CODE")
+  )
+
+aeroportos_ausentes
+```
+
+O resultado possui zero linhas, então todos os aeroportos presentes em flights também estão presentes em airports.
+
+O left_join é apropriado porque mantém todos os aeroportos da tabela flights e adiciona as informações correspondentes da tabela airports. As chaves são indicadas explicitamente no argumento by.
+
+```{r}
+flights <- flights %>%
+  left_join(
+    airports,
+    by = c("DESTINATION_AIRPORT" = "IATA_CODE")
+  )
+
+head(flights)
+```
+
+```{r}
+aeroportos_estado <- flights %>%
+  group_by(STATE) %>%
+  summarise(
+    numero_aeroportos = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(numero_aeroportos))
+
+aeroportos_estado
+```
+
+Para representar os atrasos no mapa, cada marcador mostra o código do aeroporto, a cidade, o estado e o atraso médio observado.
+
+```{r, fig.width=10, fig.height=7, dev='png'}
+dados_mapa <- flights %>%
+  drop_na(LATITUDE, LONGITUDE)
+
+this <- leaflet(dados_mapa) %>%
+  addTiles() %>%
+  addMarkers(
+    lng = ~LONGITUDE,
+    lat = ~LATITUDE,
+    label = ~DESTINATION_AIRPORT,
+    popup = ~paste(
+      "Aeroporto:", DESTINATION_AIRPORT, "<br>",
+      "Cidade:", CITY, "-", STATE, "<br>",
+      "Atraso médio:", round(MEAN_DELAY, 2), "minutos"
+    ),
+    clusterOptions = markerClusterOptions()
+  )
+
+this
+```
+
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
