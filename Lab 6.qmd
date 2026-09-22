@@ -1,0 +1,67 @@
+---
+title: "Lista 6"
+author: "Alejandro Figueiredo 230532"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(DBI)
+library(dplyr)
+library(RSQLite)
+```
+
+
+```{r}
+#1
+path <- getwd()
+fname <- file.path(path, "disco.db")
+```
+
+```{r}
+#2
+conn <- dbConnect(RSQLite::SQLite(), fname)
+```
+
+```{r}
+dbListTables(conn)
+```
+```{r}
+dbListFields(conn, "customers")
+```
+
+```{r}
+dbGetQuery(conn, "SELECT COUNT(CustomerId) FROM customers")
+```
+```{r}
+dbGetQuery(conn, "SELECT COUNT(DISTINCT Country) FROM customers")
+```
+
+
+```{r}
+dbGetQuery(conn, "SELECT DISTINCT Country AS newcontry, COUNT(CustomerId) FROM customers GROUP BY Country ORDER BY COUNT(CustomerId) DESC ")
+```
+
+```{r}
+dbGetQuery(conn, "SELECT DISTINCT Country FROM customers WHERE LENGTH(Country) = 6")
+```
+
+```{r}
+dbGetQuery(conn, "
+  SELECT DISTINCT tracks.Name 
+  FROM customers
+  INNER JOIN invoices ON customers.CustomerId = invoices.CustomerId
+  INNER JOIN invoice_items ON invoices.InvoiceId = invoice_items.InvoiceId
+  INNER JOIN tracks ON invoice_items.TrackId = tracks.TrackId
+  WHERE customers.Country = 'Brazil'
+")
+```
+
+```{r}
+dbDisconnect(conn)
+```
+
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
