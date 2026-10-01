@@ -1,0 +1,60 @@
+---
+title: "lista6_230532"
+author: "Alejandro Figueiredo 230532"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(DBI)
+library(RSQLite)
+knitr::opts_chunk$set(max.print = Inf)
+
+# Conecta/Cria o arquivo
+con <- dbConnect(RSQLite::SQLite(), "datasets/purchase.sqlite")
+```
+
+```{sql connection=con}
+-- 1
+SELECT PNO, SUM(COST) FROM PURCHASE GROUP BY PNO
+```
+
+```{sql connection=con}
+-- 2
+SELECT ENO, SUM(COST) FROM PURCHASE GROUP BY ENO
+```
+
+```{sql connection=con}
+-- 3
+SELECT PJNO, ENO, SUM(COST) FROM PURCHASE GROUP BY PJNO, ENO ORDER BY PJNO, ENO
+```
+
+```{sql connection=con}
+-- 4
+SELECT PNO, SNO, SUM(COST) FROM PURCHASE GROUP BY PNO, SNO ORDER BY PNO, SNO
+```
+
+```{sql connection=con}
+-- 5
+SELECT PJNO, ENO, SNO, SUM(COST) FROM PURCHASE GROUP BY PJNO, ENO, SNO ORDER BY PJNO, ENO, SNO
+```
+
+```{sql connection=con}
+-- 6
+SELECT PNO, SNO, ENO, SUM(COST) FROM PURCHASE GROUP BY PNO, SNO, ENO ORDER BY PNO, SNO, ENO
+```
+
+```{sql connection=con}
+-- 7
+SELECT PJNO, ENO, SNO, SUM(COST) FROM PURCHASE WHERE PJNO != 'PJ2' GROUP BY PJNO, ENO, SNO
+```
+
+```{sql connection=con}
+-- 8
+SELECT PNO, SNO, ENO, SUM(COST) FROM PURCHASE GROUP BY PNO, SNO, ENO HAVING SUM(COST) >= 2000
+```
+
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
